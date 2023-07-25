@@ -44,10 +44,12 @@ module OpenTelemetry
         end
 
         def self.extract_context(properties)
-          parent_context = nil
+          producer_context = OpenTelemetry.propagation.extract(properties[:headers])
+
+          # Optionally extend the producer trace
+          parent_context = Bunny::Instrumentation.instance.config[:extend_producer_trace] ? producer_context : nil
 
           # Link to the producer context
-          producer_context = OpenTelemetry.propagation.extract(properties[:headers])
           producer_span_context = OpenTelemetry::Trace.current_span(producer_context).context
           links = [OpenTelemetry::Trace::Link.new(producer_span_context)] if producer_span_context.valid?
 

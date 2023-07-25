@@ -21,6 +21,8 @@ module OpenTelemetry
           defined?(::Bunny)
         end
 
+        option :extend_producer_trace, default: false, validate: :boolean
+
         private
 
         def require_patches
