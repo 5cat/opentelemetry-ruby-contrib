@@ -24,6 +24,36 @@ module OpenTelemetry
           OpenTelemetry.propagation.inject(properties[key])
         end
 
+        def self.with_deliver_span(channel, tracer, delivery_info, properties, &block)
+          parent_context, links = extract_context(properties)
+
+          OpenTelemetry::Context.with_current(parent_context) do
+            exchange = delivery_info.exchange
+            routing_key = delivery_info.routing_key
+            destination = OpenTelemetry::Instrumentation::Bunny::PatchHelpers.destination_name(exchange, routing_key)
+            destination_kind = OpenTelemetry::Instrumentation::Bunny::PatchHelpers.destination_kind(channel, exchange)
+
+            attributes = {}
+            attributes['messaging.destination'] = exchange
+            attributes['messaging.destination_kind'] = destination_kind
+            attributes['messaging.rabbitmq.routing_key'] = routing_key if routing_key
+            attributes['messaging.operation'] = 'deliver'
+
+            tracer.in_span("deliver #{destination}", attributes: attributes, links: links, kind: :consumer, &block)
+          end
+        end
+
+        def self.extract_context(properties)
+          parent_context = nil
+
+          # Link to the producer context
+          producer_context = OpenTelemetry.propagation.extract(properties[:headers])
+          producer_span_context = OpenTelemetry::Trace.current_span(producer_context).context
+          links = [OpenTelemetry::Trace::Link.new(producer_span_context)] if producer_span_context.valid?
+
+          [parent_context, links]
+        end
+
         def self.basic_attributes(channel, transport, exchange, routing_key)
           attributes = {
             'messaging.system' => 'rabbitmq',
