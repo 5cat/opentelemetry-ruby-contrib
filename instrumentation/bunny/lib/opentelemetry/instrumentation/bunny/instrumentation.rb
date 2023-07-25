@@ -24,18 +24,9 @@ module OpenTelemetry
         private
 
         def require_patches
-          require_relative 'patch_helpers'
-          require_relative 'patches/channel'
-          require_relative 'patches/consumer'
-          require_relative 'patches/queue'
-          require_relative 'patches/reader_loop'
         end
 
         def patch
-          ::Bunny::Channel.prepend(Patches::Channel)
-          ::Bunny::Consumer.prepend(Patches::Consumer)
-          ::Bunny::Queue.prepend(Patches::Queue)
-          ::Bunny::ReaderLoop.prepend(Patches::ReaderLoop)
         end
       end
     end
