@@ -24,7 +24,7 @@ module OpenTelemetry
           OpenTelemetry.propagation.inject(properties[key])
         end
 
-        def self.with_deliver_span(channel, tracer, delivery_info, properties, &block)
+        def self.with_consumer_span(operation, channel, tracer, delivery_info, properties, &block)
           parent_context, links = extract_context(properties)
 
           OpenTelemetry::Context.with_current(parent_context) do
@@ -37,9 +37,9 @@ module OpenTelemetry
             attributes['messaging.destination'] = exchange
             attributes['messaging.destination_kind'] = destination_kind
             attributes['messaging.rabbitmq.routing_key'] = routing_key if routing_key
-            attributes['messaging.operation'] = 'deliver'
+            attributes['messaging.operation'] = operation
 
-            tracer.in_span("deliver #{destination}", attributes: attributes, links: links, kind: :consumer, &block)
+            tracer.in_span("#{operation} #{destination}", attributes: attributes, links: links, kind: :consumer, &block)
           end
         end
 

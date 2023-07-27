@@ -29,11 +29,13 @@ module OpenTelemetry
           require_relative 'patch_helpers'
           require_relative 'patches/channel'
           require_relative 'patches/consumer'
+          require_relative 'patches/queue'
         end
 
         def patch
           ::Bunny::Channel.prepend(Patches::Channel)
           ::Bunny::Consumer.prepend(Patches::Consumer)
+          ::Bunny::Queue.prepend(Patches::Queue)
         end
       end
     end
