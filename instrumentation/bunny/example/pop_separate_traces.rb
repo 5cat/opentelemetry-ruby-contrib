@@ -20,21 +20,24 @@ end
 conn = Bunny.new
 conn.start
 
-# open a channel
+# Open a channel
 ch = conn.create_channel
 
-# declare a queue
+# Declare a queue
 q  = ch.queue('opentelemetry-ruby-demonstration')
 
-# publish a message to the default exchange which then gets routed to this queue
+# Publish a message to the default exchange which then gets routed to the demostration queue
 q.publish('Hello, opentelemetry!')
 
-# fetch a message from the queue
+# Fetch a message from the queue
 q.pop do |delivery_info, metadata, payload|
   puts "Message: #{payload}"
   puts "Delivery info: #{delivery_info}"
   puts "Metadata: #{metadata}"
 end
 
-# close the connection
+# Close the connection
 conn.stop
+
+# Wait for all traces to be exported (if there's any pending)
+OpenTelemetry.tracer_provider.shutdown

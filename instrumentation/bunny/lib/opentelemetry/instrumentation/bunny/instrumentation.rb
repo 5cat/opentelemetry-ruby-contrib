@@ -21,6 +21,8 @@ module OpenTelemetry
           defined?(::Bunny)
         end
 
+        option :extend_producer_trace, default: false, validate: :boolean
+
         private
 
         def require_patches
@@ -28,14 +30,12 @@ module OpenTelemetry
           require_relative 'patches/channel'
           require_relative 'patches/consumer'
           require_relative 'patches/queue'
-          require_relative 'patches/reader_loop'
         end
 
         def patch
           ::Bunny::Channel.prepend(Patches::Channel)
           ::Bunny::Consumer.prepend(Patches::Consumer)
           ::Bunny::Queue.prepend(Patches::Queue)
-          ::Bunny::ReaderLoop.prepend(Patches::ReaderLoop)
         end
       end
     end
